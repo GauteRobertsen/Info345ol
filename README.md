@@ -9,6 +9,7 @@ Recommender systems on the RateBeer dataset (Lederrey & West, 2018).
 | `00_prepare_data.py` | Step 0: cuts the full `ratings.csv` down to ratings from 2012–2017 and writes summary statistics |
 | `01_data_analysis.ipynb` | Task 1: exploratory data analysis and filtering |
 | `02_models_and_evaluation.ipynb` | Task 2 & 3: Surprise models (SVD, SVD++, KNN-Basic, KNN-Baseline, Baseline, Random), 5-fold cross validation, RMSE & MAE |
+| `03_content_based_and_hybrid.ipynb` | Task 2 & 3: Content-Based Filtering (style, brewery, country, ABV) and a weighted hybrid 50% CBF + 50% CF (SVD), same evaluation |
 | `figures/` | Figures for the report |
 
 ## Setup
@@ -19,16 +20,18 @@ RateBeer Dataset/            <- ratings.csv, beers.csv, breweries.csv, users.csv
 ```
 So: `cd "RateBeer Dataset"` and then `git clone https://github.com/GauteRobertsen/Info345ol.git`.
 
-Python packages: `pandas pyarrow numpy matplotlib scikit-surprise tabulate jupyter`
+Python packages: `pandas pyarrow numpy matplotlib scikit-learn scikit-surprise tabulate jupyter`
 
 ## How to run
 1. `python 00_prepare_data.py` (a few minutes; creates `ratings_2012_2017.parquet` and `stats_full/` in the dataset folder)
 2. Run `01_data_analysis.ipynb` (creates `filtered.parquet` in the dataset folder)
 3. Run `02_models_and_evaluation.ipynb` (about 15 minutes; SVD++ is the slowest)
+4. Run `03_content_based_and_hybrid.ipynb` (about 20 minutes)
 
 To keep SVD++ trainable on a laptop, notebook 2 uses at most 100 random ratings per user (592,205 ratings, all 10,368 users).
 
 ## Results (5-fold cross validation)
+### Collaborative filtering models (notebook 02)
 | Recommenders | Pred Accuracy [RMSE] | Pred Accuracy [MAE] |
 |:--|--:|--:|
 | SVD | 0.533 | 0.392 |
@@ -37,6 +40,17 @@ To keep SVD++ trainable on a laptop, notebook 2 uses at most 100 random ratings 
 | KNN-Baseline | 0.533 | 0.390 |
 | Baseline | 0.532 | 0.390 |
 | Random | 1.001 | 0.790 |
+
+### Content-based filtering and hybrid (notebook 03)
+| Recommenders | Pred Accuracy [RMSE] | Pred Accuracy [MAE] |
+|:--|--:|--:|
+| Content-Based (CBF) | 0.592 | 0.436 |
+| SVD (CF) | 0.533 | 0.392 |
+| Hybrid 50% CBF + 50% CF | 0.539 | 0.396 |
+| Baseline | 0.532 | 0.390 |
+| Random | 1.001 | 0.790 |
+
+For beers with 0–5 ratings in the training set, CBF and the hybrid beat SVD; for beers with more ratings, SVD is best (see `figures/fig5_rmse_by_beer_popularity.png`).
 
 ## Data source
 Lederrey, G. & West, R. (2018). When Sheep Shop: Measuring Herding Effects in Product Ratings with Natural Experiments. *WWW 2018*.
